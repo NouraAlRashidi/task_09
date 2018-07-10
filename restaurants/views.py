@@ -1,18 +1,48 @@
 from django.shortcuts import render, redirect
 from .models import Restaurant
-from .forms import RestaurantForm
+from .forms import RestaurantForm, SignupForm, SigninForm
+from django.contrib.auth import login, authenticate, logout
 
 def signup(request):
     
+    form = SignupForm()
+    if request.method == "POST":
+        form = SignupForm(request.POST)
+        if form.is_valid():
+            user = form.save (commit = False)
+            user.set_password(user.password)
+            form.save()
+            login (request, user)
+            return redirect('restaurant-list')
+    context = {
+        "form":form,
+    }
     return render(request, 'signup.html', context)
 
 def signin(request):
-    
-    return 
+
+    form = SigninForm()
+    if request.method == "POST":
+        form = SigninForm(request.POST)
+        if form.is_valid():
+            my_username = form.cleaned_data['username']
+            my_password = form.cleaned_data['password']
+
+            authenticate_user = authenticate(username = my_username, password = my_password)
+            if authenticate_user is not None:
+                login (request, authenticate_user)
+                return redirect('restaurant-list')
+
+    context = {
+        "form":form,
+    }
+    return render(request, 'signin.html', context) 
 
 def signout(request):
+    logout (request)
+
     
-    return 
+    return redirect ('signout')
 
 def restaurant_list(request):
     context = {
